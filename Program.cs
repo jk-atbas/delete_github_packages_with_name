@@ -33,15 +33,18 @@ internal class Program
 			services.AddLogging();
 			services.AddRedaction();
 
-			services
-				.AddHttpClient<DeleteVersionsWithVersionNameFilter>(static client =>
-				{
-					client.DefaultRequestHeaders.UserAgent.ParseAdd($"{AssemblyName.Name}_v{Version.ToString(3)}");
-					client.BaseAddress = new Uri("https://api.github.com/");
-					client.DefaultRequestHeaders.Accept.ParseAdd(GhAccept);
-					client.DefaultRequestHeaders.Add(GhApiHeader, GhApiVersion);
+			services.AddSingleton<FetchAllPackageVersions>();
+			services.AddSingleton<DeleteVersionsWithVersionNameFilter>();
 
-					client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+			services
+				.AddHttpClient(GeneralSettings.GeneralTopic, builder =>
+				{
+					builder.DefaultRequestHeaders.UserAgent.ParseAdd($"{AssemblyName.Name}_v{Version.ToString(3)}");
+					builder.BaseAddress = new Uri("https://api.github.com/");
+					builder.DefaultRequestHeaders.Accept.ParseAdd(GhAccept);
+					builder.DefaultRequestHeaders.Add(GhApiHeader, GhApiVersion);
+
+					builder.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
 						"Bearer",
 						GitHubInputs.NugetApiKey);
 				})
