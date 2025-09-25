@@ -33,8 +33,7 @@ public sealed class FetchAllPackageVersions(
 		var result = await FetchVersions(relativePackageVersionsUri, cancellationToken);
 
 		return [.. result
-			.Select(ghResponse => GitHubPackage.TryParse(ghResponse, out var package) ? package : null)
-			.OfType<GitHubPackage>()];
+			.Select(ghResponse => new GitHubPackage(ghResponse.Id, ghResponse.Name))];
 	}
 
 	private async Task<GitHubPackageVersionResponse[]> FetchVersions(

@@ -15,7 +15,7 @@
 		"commandName": "WSL2",
 		"environmentVariables": {
 			"DOTNETCORE_ENVIRONMENT": "Development",
-			"INPUT_NUGET_API_KEY": "some-token",
+			"INPUT_GITHUB_API_KEY": "some-token",
 			"INPUT_PACKAGE_TYPE": "nuget",
 			"INPUT_USERNAME": "jk-atbas",
 			"INPUT_ORGNAME": "",
@@ -27,7 +27,7 @@
 		"commandName": "Docker",
 		"environmentVariables": {
 			"DOTNETCORE_ENVIRONMENT": "Development",
-			"INPUT_NUGET_API_KEY": "some-token",
+			"INPUT_GITHUB_API_KEY": "some-token",
 			"INPUT_PACKAGE_TYPE": "nuget",
 			"INPUT_USERNAME": "jk-atbas",
 			"INPUT_ORGNAME": "",

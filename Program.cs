@@ -24,7 +24,7 @@ internal class Program
 		IEnvironmentProvider environment = SystemEnvironmentProvider.Instance;
 		GitHubInputs inputs = new GitHubInputs(environment);
 
-		if (string.IsNullOrWhiteSpace(inputs.NugetApiKey))
+		if (string.IsNullOrWhiteSpace(inputs.GithubApiKey))
 		{
 			throw new InvalidOperationException("No nuget api key was set!");
 		}
@@ -51,7 +51,7 @@ internal class Program
 
 					client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
 						"Bearer",
-						inputs.NugetApiKey);
+						inputs.GithubApiKey);
 				})
 				.AddExtendedHttpClientLogging()
 				.AddStandardResilienceHandler();
