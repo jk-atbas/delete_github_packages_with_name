@@ -21,7 +21,10 @@ internal class Program
 
 	private static async Task Main(string[] args)
 	{
-		if (string.IsNullOrWhiteSpace(GitHubInputs.NugetApiKey))
+		IEnvironmentProvider environment = SystemEnvironmentProvider.Instance;
+		GitHubInputs inputs = new GitHubInputs(environment);
+
+		if (string.IsNullOrWhiteSpace(inputs.NugetApiKey))
 		{
 			throw new InvalidOperationException("No nuget api key was set!");
 		}
@@ -33,20 +36,22 @@ internal class Program
 			services.AddLogging();
 			services.AddRedaction();
 
+			services.AddSingleton<IEnvironmentProvider>(environment);
+			services.AddSingleton<GitHubInputs>(inputs);
 			services.AddSingleton<FetchAllPackageVersions>();
 			services.AddSingleton<DeleteVersionsWithVersionNameFilter>();
 
 			services
-				.AddHttpClient(GeneralSettings.GeneralTopic, builder =>
+				.AddHttpClient(GeneralSettings.GeneralTopic, client =>
 				{
-					builder.DefaultRequestHeaders.UserAgent.ParseAdd($"{AssemblyName.Name}_v{Version.ToString(3)}");
-					builder.BaseAddress = new Uri("https://api.github.com/");
-					builder.DefaultRequestHeaders.Accept.ParseAdd(GhAccept);
-					builder.DefaultRequestHeaders.Add(GhApiHeader, GhApiVersion);
+					client.DefaultRequestHeaders.UserAgent.ParseAdd($"{AssemblyName.Name}_v{Version.ToString(3)}");
+					client.BaseAddress = new Uri("https://api.github.com/");
+					client.DefaultRequestHeaders.Accept.ParseAdd(GhAccept);
+					client.DefaultRequestHeaders.Add(GhApiHeader, GhApiVersion);
 
-					builder.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+					client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
 						"Bearer",
-						GitHubInputs.NugetApiKey);
+						inputs.NugetApiKey);
 				})
 				.AddExtendedHttpClientLogging()
 				.AddStandardResilienceHandler();

@@ -1,19 +1,20 @@
 using DeletePackageVersionsAction.Infrastructure.Logging;
+using DeletePackageVersionsAction.Infrastructure.Settings;
 using Microsoft.Extensions.Logging;
-using static DeletePackageVersionsAction.Infrastructure.Settings.GitHubInputs;
 
 namespace DeletePackageVersionsAction.Infrastructure.Logic;
 
 public sealed class DeleteVersionsWithVersionNameFilter(
-	HttpClient client,
+	IHttpClientFactory clientFactory,
 	FetchAllPackageVersions packageVersions,
+	GitHubInputs inputs,
 	ILogger<DeleteVersionsWithVersionNameFilter> logger)
 {
 	public async Task<bool> Execute(CancellationToken cancellationToken)
 	{
 		try
 		{
-			if (!UserNameOrOrgNameSet)
+			if (!inputs.UserNameOrOrgNameSet)
 			{
 				logger.LogWarningGitHub("No user or orgname was found!");
 

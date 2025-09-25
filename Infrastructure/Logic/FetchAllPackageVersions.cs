@@ -5,16 +5,18 @@ using DeletePackageVersionsAction.Infrastructure.Types;
 using DeletePackageVersionsAction.Infrastructure.Types.Responses;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
-using static DeletePackageVersionsAction.Infrastructure.Settings.GitHubInputs;
 
 namespace DeletePackageVersionsAction.Infrastructure.Logic;
-public sealed class FetchAllPackageVersions(IHttpClientFactory clientFactory, ILogger<FetchAllPackageVersions> logger)
+public sealed class FetchAllPackageVersions(
+	IHttpClientFactory clientFactory,
+	GitHubInputs inputs,
+	ILogger<FetchAllPackageVersions> logger)
 {
 	public async Task<GitHubPackage[]> GetAllVersions(CancellationToken cancellationToken)
 	{
-		string orgOrUserDomain = UserName is not null
-			? $"users/{UserName}"
-			: $"orgs/{OrgName}";
+		string orgOrUserDomain = inputs.UserName is not null
+			? $"users/{inputs.UserName}"
+			: $"orgs/{inputs.OrgName}";
 
 #if DEBUG
 		const int pageSize = 1;
@@ -23,10 +25,10 @@ public sealed class FetchAllPackageVersions(IHttpClientFactory clientFactory, IL
 #endif
 
 		Uri relativePackageVersionsUri = new(
-				$"{orgOrUserDomain}/packages/{PackageType}/{PackageName}/versions?per_page={pageSize}",
+				$"{orgOrUserDomain}/packages/{inputs.PackageType}/{inputs.PackageName}/versions?per_page={pageSize}",
 				UriKind.Relative);
 
-		logger.LogNoticeGitHub($"Fetching all version infos for {PackageType} package {PackageName}");
+		logger.LogNoticeGitHub($"Fetching all version infos for {inputs.PackageType} package {inputs.PackageName}");
 
 		var result = await FetchVersions(relativePackageVersionsUri, cancellationToken);
 
@@ -41,9 +43,10 @@ public sealed class FetchAllPackageVersions(IHttpClientFactory clientFactory, IL
 	{
 		var (responses, links) = await GetResults(relativeUri.OriginalString, cancellationToken);
 
-		if (links.Count == 0 || !links.TryGetValue("next", out var nextUrl) || string.IsNullOrWhiteSpace(nextUrl))
+		if (links.Count == 0 || !links.TryGetValue("next", out string? nextUrl) || string.IsNullOrWhiteSpace(nextUrl))
 		{
 			logger.LogNoticeGitHub("Only single page result was received");
+
 			return responses;
 		}
 
