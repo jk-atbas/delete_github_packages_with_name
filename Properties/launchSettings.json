@@ -1,10 +1,39 @@
 {
   "profiles": {
-    "Local(Dev)": {
-      "commandName": "Project"
-    },
+	"Local (Dev)": {
+		"commandName": "Project",
+		"environmentVariables": {
+			"DOTNETCORE_ENVIRONMENT": "Development",
+			"INPUT_PACKAGE_TYPE": "nuget",
+			"INPUT_USERNAME": "jk-atbas",
+			"INPUT_ORGNAME": "",
+			"INPUT_PACKAGE_NAME": "Very_Useful_Reasons",
+			"INPUT_VERSION_FILTER": "rc-pr-1"
+		}
+	},
+	"WSL (Dev)": {
+		"commandName": "WSL2",
+		"environmentVariables": {
+			"DOTNETCORE_ENVIRONMENT": "Development",
+			"INPUT_NUGET_API_KEY": "some-token",
+			"INPUT_PACKAGE_TYPE": "nuget",
+			"INPUT_USERNAME": "jk-atbas",
+			"INPUT_ORGNAME": "",
+			"INPUT_PACKAGE_NAME": "Very_Useful_Reasons",
+			"INPUT_VERSION_FILTER": "rc-pr-1"
+		}
+	},
     "Container (Dockerfile)": {
-      "commandName": "Docker"
+		"commandName": "Docker",
+		"environmentVariables": {
+			"DOTNETCORE_ENVIRONMENT": "Development",
+			"INPUT_NUGET_API_KEY": "some-token",
+			"INPUT_PACKAGE_TYPE": "nuget",
+			"INPUT_USERNAME": "jk-atbas",
+			"INPUT_ORGNAME": "",
+			"INPUT_PACKAGE_NAME": "Very_Useful_Reasons",
+			"INPUT_VERSION_FILTER": "rc-pr-1"
+		}
     }
   }
 }
