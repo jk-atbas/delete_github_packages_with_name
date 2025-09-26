@@ -71,6 +71,6 @@ internal class Program
 			logger.LogWarningGitHub("Deletion attempt was not successful!");
 		}
 
-		app.Run();
+		await app.StopAsync(cancellationToken);
 	}
 }

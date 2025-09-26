@@ -16,9 +16,13 @@ public sealed class GitHubInputs(IEnvironmentVariableProvider environment)
 	public string PackageName => environment.GetEnvironmentVariable("INPUT_PACKAGE_NAME")
 		?? throw new InvalidOperationException("No INPUT_PACKAGE_TYPE env var was set");
 
-	public string? VersionFilter => environment.GetEnvironmentVariable("INPUT_VERSION_FILTER");
+	public string[]? VersionFilter => environment.GetEnvironmentVariable("INPUT_VERSION_FILTER")?.Split(
+		";",
+		StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-	public string? ExcludeFilter => environment.GetEnvironmentVariable("INPUT_VERSION_EXCLUDE_FILTER");
+	public string[]? ExcludeFilter => environment.GetEnvironmentVariable("INPUT_VERSION_EXCLUDE_FILTER")?.Split(
+		";",
+		StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
 	public bool UserNameOrOrgNameSet => !string.IsNullOrWhiteSpace(UserName)
 		|| !string.IsNullOrWhiteSpace(OrgName);

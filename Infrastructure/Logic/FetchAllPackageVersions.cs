@@ -3,6 +3,7 @@ using DeletePackageVersionsAction.Infrastructure.Logging;
 using DeletePackageVersionsAction.Infrastructure.Settings;
 using DeletePackageVersionsAction.Infrastructure.Types;
 using DeletePackageVersionsAction.Infrastructure.Types.Responses;
+using DeletePackageVersionsAction.Infrastructure.Uris;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
@@ -14,20 +15,13 @@ public sealed class FetchAllPackageVersions(
 {
 	public async Task<GitHubPackage[]> GetAllVersions(CancellationToken cancellationToken)
 	{
-		string orgOrUserDomain = inputs.UserName is not null
-			? $"users/{inputs.UserName}"
-			: $"orgs/{inputs.OrgName}";
-
 #if DEBUG
 		const int pageSize = 1;
 #else
 		const int pageSize = 30;
 #endif
 
-		Uri relativePackageVersionsUri = new(
-				$"{orgOrUserDomain}/packages/{inputs.PackageType}/{inputs.PackageName}/versions?per_page={pageSize}",
-				UriKind.Relative);
-
+		Uri relativePackageVersionsUri = UriHelper.BuildRelativeVersionsUri(inputs, pageSize);
 		logger.LogNoticeGitHub($"Fetching all version infos for {inputs.PackageType} package {inputs.PackageName}");
 
 		var result = await FetchVersions(relativePackageVersionsUri, cancellationToken);
