@@ -8,7 +8,8 @@
 			"INPUT_USERNAME": "jk-atbas",
 			"INPUT_ORGNAME": "",
 			"INPUT_PACKAGE_NAME": "Very_Useful_Reasons",
-			"INPUT_VERSION_FILTER": "rc-pr-1"
+			"INPUT_VERSION_FILTER": "rc-pr-1",
+			"INPUT_VERSION_EXCLUDE_FILTER": ""
 		}
 	},
 	"WSL (Dev)": {
@@ -20,7 +21,8 @@
 			"INPUT_USERNAME": "jk-atbas",
 			"INPUT_ORGNAME": "",
 			"INPUT_PACKAGE_NAME": "Very_Useful_Reasons",
-			"INPUT_VERSION_FILTER": "rc-pr-1"
+			"INPUT_VERSION_FILTER": "rc-pr-1",
+			"INPUT_VERSION_EXCLUDE_FILTER": ""
 		}
 	},
     "Container (Dockerfile)": {
@@ -32,7 +34,8 @@
 			"INPUT_USERNAME": "jk-atbas",
 			"INPUT_ORGNAME": "",
 			"INPUT_PACKAGE_NAME": "Very_Useful_Reasons",
-			"INPUT_VERSION_FILTER": "rc-pr-1"
+			"INPUT_VERSION_FILTER": "rc-pr-1",
+			"INPUT_VERSION_EXCLUDE_FILTER": ""
 		}
     }
   }

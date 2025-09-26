@@ -18,6 +18,8 @@ public sealed class GitHubInputs(IEnvironmentVariableProvider environment)
 
 	public string? VersionFilter => environment.GetEnvironmentVariable("INPUT_VERSION_FILTER");
 
+	public string? ExcludeFilter => environment.GetEnvironmentVariable("INPUT_VERSION_EXCLUDE_FILTER");
+
 	public bool UserNameOrOrgNameSet => !string.IsNullOrWhiteSpace(UserName)
 		|| !string.IsNullOrWhiteSpace(OrgName);
 }
