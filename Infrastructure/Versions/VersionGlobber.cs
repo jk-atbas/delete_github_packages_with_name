@@ -70,7 +70,7 @@ public static class VersionGlobber
 				case '\\':
 					if (i + 1 < pattern.Length)
 					{
-						// escape next char literally for regex
+						// Escape next char literally for regex
 						char lit = pattern[i + 1];
 
 						if ("[]{}().+*?^$|\\".Contains(lit))
@@ -83,7 +83,8 @@ public static class VersionGlobber
 					}
 					else
 					{
-						sb.Append("\\\\"); // trailing backslash -> literal '\'
+						// Trailing backslash -> literal '\'
+						sb.Append("\\\\");
 						i++;
 					}
 					break;
@@ -105,22 +106,21 @@ public static class VersionGlobber
 					break;
 
 				case '[':
-					int end = FindClosingBracket(pattern, i + 1); // s. Fix unten
+					int end = FindClosingBracket(pattern, i + 1);
+
 					if (end > i)
 					{
 						string raw = pattern.Substring(i + 1, end - i - 1);
 
 						if (string.IsNullOrEmpty(raw) || raw == "!")
 						{
-							// siehe (5): fehlerhafte/ leere Klasse -> behandle '[' literal
 							sb.Append("\\[");
-							i++; // nur das '[' konsumieren, ']' bleibt normaler Text
+							i++;
 							break;
 						}
 
 						string content = BuildRegexCharClass(raw, out bool neg);
 
-						// noch einmal absichern: leere Klasse nach Verarbeitung ist ungültig
 						if (content.Length == 0)
 						{
 							sb.Append("\\[");
@@ -129,6 +129,7 @@ public static class VersionGlobber
 						}
 
 						sb.Append('[');
+
 						if (neg)
 						{
 							sb.Append('^');
@@ -145,14 +146,13 @@ public static class VersionGlobber
 					break;
 
 				case '{':
-					// Alternativen {a,b,c} – jede Alternative darf wieder ein Glob sein
 					int endBrace = FindClosingBrace(pattern, i + 1);
 
 					if (endBrace > i)
 					{
 						string inner = pattern.Substring(i + 1, endBrace - i - 1);
 						var alts = SplitByCommaOutsideBraces(inner)
-							.Select(GlobToRegex) // recursive
+							.Select(GlobToRegex)
 							.ToArray();
 
 						sb.Append("(?:").Append(string.Join("|", alts)).Append(')');
@@ -204,7 +204,7 @@ public static class VersionGlobber
 
 		int i = 0;
 
-		// Negation am Anfang: ! oder ^ zulassen
+		// Allows for negation (! or ^) at the beginning
 		if (cls[i] is '!' or '^')
 		{
 			negated = true;
@@ -212,8 +212,12 @@ public static class VersionGlobber
 		}
 
 		var sb = new StringBuilder(cls.Length);
-		bool havePrevChar = false;     // haben wir ein linkes Ende für einen Range?
-		char prevChar = '\0';          // letztes literal Zeichen (unescaped, bereits emittiert)
+
+		// Whether we have a range operatior beginning
+		bool havePrevChar = false;
+
+		// Last unescaped literal char
+		char prevChar = '\0';
 
 		while (i < cls.Length)
 		{
@@ -221,7 +225,7 @@ public static class VersionGlobber
 
 			if (ch == '\\')
 			{
-				// literal nächstes Zeichen
+				// Next literal char
 				if (i < cls.Length)
 				{
 					char lit = cls[i++];
@@ -231,13 +235,14 @@ public static class VersionGlobber
 					}
 
 					sb.Append(lit);
-					// escaped zählt als "vorheriges Zeichen" für mögliche Ranges
+
+					// Escapes counts towards previous chars to allow ranges
 					havePrevChar = true;
 					prevChar = lit;
 				}
 				else
 				{
-					// trailing backslash
+					// Trailing backslash
 					sb.Append("\\\\");
 					havePrevChar = true;
 					prevChar = '\\';
@@ -248,26 +253,29 @@ public static class VersionGlobber
 
 			if (ch == '-')
 			{
-				// Nur Range, wenn: es gibt ein linkes Zeichen, wir sind nicht am Ende,
-				// und der nächste Char ist nicht ']'
+				// Only a range when there is a left character, then we have not reached the end yet
+				// and the next char is not ']'
 				bool canBeRange = havePrevChar && i < cls.Length && cls[i] != ']';
 
 				if (canBeRange)
 				{
-					// Peek nächstes Zeichen (unter Berücksichtigung von Escape)
+					// Peek next character and take escapes into account
 					int j = i;
 					char next = j < cls.Length && cls[j] == '\\' && j + 1 < cls.Length ? cls[j + 1] : cls[j];
 
-					// Reversed Range verhindern: prevChar > next => '-' literal
+					// Prevents a reversed range: prevChar > next => '-' literal
 					if (prevChar <= next)
 					{
+						// Encountered a range separator
 						sb.Append('-');      // echter Range-Separator
-						havePrevChar = false; // Range „verbraucht“ prevChar; nächstes Zeichen wird neues Ende
+
+						// Range is consumed; Next char is a new end
+						havePrevChar = false;
 
 						continue;
 					}
 
-					// sonst literal:
+					// Assume a literal
 					sb.Append("\\-");
 					havePrevChar = true;
 					prevChar = '-';
@@ -282,7 +290,7 @@ public static class VersionGlobber
 				continue;
 			}
 
-			// Escape für Sonderfälle in Klassen
+			// Escape for special cases in classes
 			if (ch is ']' or '^')
 			{
 				sb.Append('\\').Append(ch);
@@ -303,7 +311,7 @@ public static class VersionGlobber
 	{
 		var result = new List<Regex>();
 
-		if (patterns == null)
+		if (patterns is null)
 		{
 			return result;
 		}
@@ -390,7 +398,7 @@ public static class VersionGlobber
 
 			if (ch == '\\')
 			{
-				// escaped: nächstes Zeichen (falls vorhanden) wörtlich übernehmen, inkl. Komma
+				// Copy the next escaped char as literal if it exists
 				if (i + 1 < input.Length)
 				{
 					sb.Append('\\').Append(input[i + 1]);
@@ -398,7 +406,8 @@ public static class VersionGlobber
 				}
 				else
 				{
-					sb.Append('\\'); // trailing backslash
+					// Trailing backslash
+					sb.Append('\\');
 				}
 
 				continue;
@@ -434,6 +443,8 @@ public static class VersionGlobber
 
 	private static RegexOptions GetRegexOptions(bool caseInsensitive)
 	{
-		return RegexOptions.CultureInvariant | (caseInsensitive ? RegexOptions.IgnoreCase : RegexOptions.None);
+		RegexOptions opts = RegexOptions.CultureInvariant | RegexOptions.NonBacktracking;
+
+		return opts | (caseInsensitive ? RegexOptions.IgnoreCase : RegexOptions.None);
 	}
 }
