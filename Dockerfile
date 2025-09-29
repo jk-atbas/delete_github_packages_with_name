@@ -2,7 +2,6 @@
 
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
 FROM mcr.microsoft.com/dotnet/runtime:9.0 AS base
-USER $APP_UID
 WORKDIR /app
 
 
@@ -24,5 +23,6 @@ RUN dotnet publish "./DeletePackageVersionsAction.csproj" -c $BUILD_CONFIGURATIO
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=publish /app/publish /app/
+RUN ls -la /app && dotnet --info
 ENTRYPOINT ["dotnet", "DeletePackageVersionsAction.dll"]
