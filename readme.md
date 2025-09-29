@@ -118,7 +118,7 @@ Diese Variablen werden von `GitHubInputs` gelesen:
 }
 ```
 
-> Das PAT (INPUT_GITHUB_API_KEY) kann alternativ benutzerkontospezifisch in einer Shell/OS gesetzt – oder (für lokale Tests) als Prozess-EnvVar in den launchSettings werden
+> Das PAT (INPUT_GITHUB_API_KEY) kann alternativ benutzerkontospezifisch in einer Shell/OS – oder (für lokale Tests) als Prozess-EnvVar in den launchSettings gesetzt werden
 
 ### Setzen des PAT als User-EnvVar
 
