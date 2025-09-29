@@ -1,0 +1,34 @@
+name: Delete Github Package Versions through name
+description: Deletes Package based on their version name (such as 1.3.1 for nuget using semver2) utilizing glob name matching
+inputs:
+  GITHUB_API_KEY:
+    description: Api Token to authenticate against the GitHub Api
+    required: true
+
+  PACKAGE_TYPE:
+    description: GitHub Packages type
+    required: false
+    default: nuget
+
+  USERNAME:
+    description: Either a user-based GitHub Packages Feed is used (either this or ORGNAME must be set)
+    required: false
+
+  ORGNAME:
+    description: Or a org-based Feed (either this or USERNAME must be set)
+    required: false
+
+  PACKAGE_NAME:
+    description: The name of the package in the GitHub Package Feed
+    required: true
+
+  VERSION_FILTER:
+    description: Glob Filter for matching the versions name
+    required: false
+
+  VERSION_EXCLUDE_FILTER:
+    description: Glob Filter to exclude certain results from the VERSION_FILTER result
+
+runs:
+  using: docker
+  image: Dockerfile
