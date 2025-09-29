@@ -127,7 +127,7 @@ Beispiele:
 Powershell
 
 ```pwsh
-[System.Environment]::SetEnvironmentVariable("INPUT_GITHUB_API_KEY","<PAT>","User"
+[System.Environment]::SetEnvironmentVariable("INPUT_GITHUB_API_KEY","<PAT>","User")
 ```
 
 bash
