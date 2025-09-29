@@ -25,4 +25,4 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish /app/
 RUN ls -la /app && dotnet --info
-ENTRYPOINT ["dotnet", "DeletePackageVersionsAction.dll"]
+ENTRYPOINT ["dotnet", "/app/DeletePackageVersionsAction.dll"]
