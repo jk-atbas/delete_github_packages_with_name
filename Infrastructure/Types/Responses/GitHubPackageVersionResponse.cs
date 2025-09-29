@@ -7,7 +7,7 @@ public sealed class GitHubPackageVersionResponse
 	public long Id { get; set; }
 
 	/// <summary>
-	/// Represents the actual version number as visible in github ui; eg 1.1.3
+	/// Represents the actual version number as visible in github ui; eg 1.1.3 for nuget using semver2
 	/// </summary>
 	public string Name { get; set; } = string.Empty;
 

@@ -26,6 +26,75 @@ public static class VersionGlobber
 	}
 
 	/// <summary>
+	/// Creates a predicate function that determines whether a string matches the specified include 
+	/// and exclude glob patterns.
+	/// </summary>
+	/// <param name="include">A collection of glob patterns that define which strings should be included. 
+	/// If null or empty, all strings are considered included (subject to exclude patterns).</param>
+	/// <param name="include">A collection of glob patterns that define which strings should be excluded.
+	/// If null or empty, no strings are excluded based on exclude patterns.</param>
+	/// <param name="caseInsensitive">
+	/// When true, pattern matching is case-insensitive; otherwise, it is case-sensitive. Default is true.
+	/// </param>
+	/// <returns>
+	/// A predicate function that returns true when the input string matches any include pattern 
+	/// (or all if no includes are specified) 
+	/// and does not match any exclude pattern.
+	/// </returns>
+	/// <remarks>
+	/// <para>
+	/// The returned function evaluates strings against the pattern rules in the following order:
+	/// </para>
+	/// <list type="number">
+	/// <item>
+	/// <description>
+	/// If no include patterns are provided, all strings are considered included
+	/// </description>
+	/// </item>
+	/// <item>
+	/// <description>
+	/// If include patterns exist, the string must match at least one include pattern
+	/// </description>
+	/// </item>
+	/// <item>
+	/// <description>
+	/// The string must not match any exclude patterns (if exclude patterns are provided)
+	/// </description>
+	/// </item>
+	/// </list>
+	/// <para>
+	/// Supported glob features include: *, ?, character classes [...], negation [!...], and alternation {a,b,c}.
+	/// </para>
+	/// <example>
+	/// The following example shows how to create a matcher that includes "test-*" patterns
+	/// but excludes "test-backup" and "test-temp":
+	/// <code>
+	/// var matcher = VersionGlobber.CreateMatcher(
+	///     include: new[] { "test-*" },
+	///     exclude: new[] { "test-backup", "test-temp" });
+	/// 
+	/// bool result1 = matcher("test-v1"); // returns true
+	/// bool result2 = matcher("test-backup"); // returns false
+	/// </code>
+	/// </example>
+	/// </remarks>
+	public static Func<string, bool> CreateMatcher(
+	IEnumerable<string>? include = null,
+	IEnumerable<string>? exclude = null,
+	bool caseInsensitive = true)
+	{
+		var inc = CompilePatterns(include, caseInsensitive);
+		var exc = CompilePatterns(exclude, caseInsensitive);
+
+		return s =>
+		{
+			bool included = inc.Count == 0 || inc.Any(rx => rx.IsMatch(s));
+
+			return included && (exc.Count == 0 || exc.All(rx => !rx.IsMatch(s)));
+		};
+	}
+
+	/// <summary>
 	/// Filters a sequence based on include/exclude globs while preserving its original order
 	/// </summary>
 	public static IReadOnlyList<string> Filter(

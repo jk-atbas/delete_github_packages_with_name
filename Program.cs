@@ -54,6 +54,9 @@ internal class Program
 						inputs.GithubApiKey);
 				})
 				.AddExtendedHttpClientLogging()
+				// Todo: When parlellized work is done on the httpclientfactory it might be beneficial to
+				// introduce a proper resilience handler that reacts to the X-RateLimit-Remaining and X-RateLimit-Reset
+				// headers when rate-limits are applied
 				.AddStandardResilienceHandler();
 		});
 

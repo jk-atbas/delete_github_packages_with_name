@@ -24,8 +24,7 @@ public sealed class DeleteVersionsWithVersionNameFilter(
 				throw new InvalidOperationException("Either INPUT_USERNAME or INPUT_ORGNAME must be set");
 			}
 
-			var versions = await packageVersions.GetAllVersions(cancellationToken);
-			await DeleteVersions(versions, cancellationToken);
+			await DeleteVersions(cancellationToken);
 
 			return true;
 		}
@@ -37,40 +36,60 @@ public sealed class DeleteVersionsWithVersionNameFilter(
 		}
 	}
 
-	private async Task DeleteVersions(GitHubPackage[] versions, CancellationToken cancellationToken)
+	private async Task DeleteVersions(CancellationToken cancellationToken)
 	{
-		HashSet<string> affectedVersions = VersionGlobber.Filter(
-			versions.Select(ghp => ghp.Version),
-			inputs.VersionFilter,
-			inputs.ExcludeFilter)
-			.ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-		if (affectedVersions.Count == 0)
-		{
-			logger.LogNoticeGitHub("Nothing to delete was found");
-
-			return;
-		}
-
-		IEnumerable<GitHubPackage> packagesToDelete = versions.Where(ghp => affectedVersions.Contains(ghp.Version));
+		Func<string, bool> isAffected = VersionGlobber.CreateMatcher(inputs.VersionFilter, inputs.ExcludeFilter);
+		HashSet<long> attemptedVersions = [];
 
 		using HttpClient client = clientFactory.CreateClient(GeneralSettings.GeneralTopic);
 
-		foreach (var package in packagesToDelete)
+		int total = 0, deleted = 0, skipped = 0, failed = 0;
+
+		// Todo: When need arises paralellize this; Eg. when a lots versions are to be deleted
+		await foreach (GitHubPackage package in packageVersions.StreamVersions(cancellationToken))
 		{
-			Uri packageUriToDelete = UriHelper.BuildRelativeVersionsUri(inputs, versionId: package.Id);
+			total++;
 
-			using HttpResponseMessage response = await client.DeleteAsync(packageUriToDelete, cancellationToken);
-
-			if (!response.IsSuccessStatusCode)
+			if (!isAffected.Invoke(package.Version) || attemptedVersions.Contains(package.Id))
 			{
-				logger.LogWarningGitHub(
-					$"Deletion attempt for {inputs.PackageName} Version={package.Version} was not successful");
+				skipped++;
 
 				continue;
 			}
 
-			logger.LogNoticeGitHub($"Deleted {inputs.PackageName} Version={package.Version} successfully");
+			if (await TryDeleteVersion(client, package, cancellationToken))
+			{
+				deleted++;
+			}
+			else
+			{
+				failed++;
+			}
+
+			attemptedVersions.Add(package.Id);
 		}
+
+		logger.LogNoticeGitHub($"Delete package versions summary: " +
+			$"total={total}, deleted={deleted}, skipped={skipped}, failed={failed}");
+	}
+
+	private async Task<bool> TryDeleteVersion(HttpClient client, GitHubPackage package, CancellationToken cancellationToken)
+	{
+		Uri packageUriToDelete = UriHelper.BuildRelativeVersionsUri(inputs, versionId: package.Id);
+
+		using HttpResponseMessage response = await client.DeleteAsync(packageUriToDelete, cancellationToken);
+
+		if (response.IsSuccessStatusCode)
+		{
+			logger.LogNoticeGitHub($"Deleted {inputs.PackageName} Version={package.Version} successfully");
+
+			return true;
+		}
+
+		logger.LogWarningGitHub(
+			$"Deletion attempt for {inputs.PackageName} Version={package.Version} was not successful: " +
+			$"{(int) response.StatusCode} {response.ReasonPhrase}");
+
+		return false;
 	}
 }
