@@ -2,10 +2,11 @@ namespace DeletePackageVersionsAction.Infrastructure.Settings;
 
 public sealed class GitHubInputs(IEnvironmentVariableProvider environment)
 {
-	public string GithubApiKey => environment.GetEnvironmentVariable(
-		"INPUT_GITHUB_API_KEY",
-		EnvironmentVariableTarget.User | EnvironmentVariableTarget.Process)
-			?? throw new InvalidOperationException("No INPUT_GITHUB_API_KEY env var was set");
+	public string GithubApiKey => environment.GetEnvironmentVariable("INPUT_GITHUB_API_KEY")
+		?? environment.GetEnvironmentVariable(
+			"INPUT_GITHUB_API_KEY",
+			EnvironmentVariableTarget.User | EnvironmentVariableTarget.Process)
+		?? throw new InvalidOperationException("No INPUT_GITHUB_API_KEY env var was set");
 
 	public string PackageType => environment.GetEnvironmentVariable("INPUT_PACKAGE_TYPE") ?? "nuget";
 
